@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SPARQL Query Results</title>
+    <!-- Buttons for Download -->
+    <br>
+    <button onclick="downloadCSV()">Download as CSV</button>
+    <button onclick="downloadExcel()">Download as Excel</button>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+
+    <script>
+        function extractTableData() {
+            let table = document.querySelector("table");
+            let rows = [];
+
+            // Get headers
+            let headers = [];
+            table.querySelectorAll("th").forEach(th => headers.push(th.innerText));
+            rows.push(headers);
+
+            // Get table rows
+            table.querySelectorAll("tr").forEach((tr, index) => {
+                if (index === 0) return; // Skip header row
+                let rowData = [];
+                tr.querySelectorAll("td").forEach(td => rowData.push(td.innerText));
+                rows.push(rowData);
+            });
+
+            return rows;
+        }
+
+        function downloadCSV() {
+            let tableData = extractTableData();
+
+            fetch("/generate_csv", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ data: tableData })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement("a");
+                a.href = url;
+                a.download = "query_results.csv";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            })
+            .catch(error => console.error("Error downloading CSV:", error));
+        }
+
+        function downloadExcel() {
+            let tableData = extractTableData();
+
+            fetch("/generate_excel", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ data: tableData })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement("a");
+                a.href = url;
+                a.download = "query_results.xlsx";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            })
+            .catch(error => console.error("Error downloading Excel:", error));
+        }
+    </script>
+</head>
+<body>
+
+<h1>SPARQL Query Results</h1>
+
+<!-- Display the table dynamically -->
+{% if results and results["head"]["vars"] %}
+<table>
+    <thead>
+    <tr>
+        {% for header in results["head"]["vars"] %}
+        <th>{{ header }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in results["results"]["bindings"] %}
+    <tr>
+        {% for header in results["head"]["vars"] %}
+        <td>{{ row[header]["value"] if header in row else "N/A" }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No results found.</p>
+{% endif %}
+
+</body>
+</html>

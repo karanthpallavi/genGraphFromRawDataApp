@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transform Raw Data Files to Graph</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>Transform Raw Data Files to Graph</h1>
+    </header>
+    <main>
+        <form action="{{ url_for('main.upload_file') }}" method="POST" enctype="multipart/form-data">
+            <div class="file-upload">
+                <label for="file">Upload your Excel or CSV file:</label>
+                <input type="file" name="file" id="file" accept=".csv, .xlsx, .xls">
+            </div>
+            <button type="submit" class="upload-btn">Upload</button>
+        </form>
+    </main>
+</div>
+</body>
+</html>
